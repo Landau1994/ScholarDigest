@@ -1,0 +1,5 @@
+{
+  "name": "ScholarDigest",
+  "description": "An AI-powered research paper analyzer that automatically generates structured digests using specific Obsidian-style templates.",
+  "requestFramePermissions": []
+}

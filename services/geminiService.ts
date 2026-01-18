@@ -30,7 +30,9 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
   });
 };
 
-export const generateDigest = async (file: File, template: string): Promise<string> => {
+import { Language } from '../types';
+
+export const generateDigest = async (file: File, template: string, language: Language = 'en'): Promise<string> => {
   try {
     const client = getGeminiClient();
     
@@ -42,6 +44,8 @@ export const generateDigest = async (file: File, template: string): Promise<stri
     const prompt = `
       You are an expert academic researcher and data scientist. 
       Your task is to analyze the provided research paper and generate a comprehensive digest based strictly on the following Markdown template.
+      
+      Output Language: ${language === 'cn' ? 'Chinese (Simplified)' : 'English'}
       
       Here is the template you must fill out:
       
@@ -58,6 +62,7 @@ export const generateDigest = async (file: File, template: string): Promise<stri
       6. **Figures**: Summarize the key figures in the table provided.
       7. **Personal Notes**: Leave this section blank for the user.
       8. **Formatting**: Return ONLY the raw Markdown text. Do not wrap it in \`\`\`markdown code blocks.
+      9. **Language**: Ensure all generated content is in ${language === 'cn' ? 'Chinese (Simplified)' : 'English'}, except for technical terms that are commonly used in English or the paper title if appropriate.
     `;
 
     const response = await client.models.generateContent({

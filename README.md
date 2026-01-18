@@ -11,6 +11,7 @@ ScholarDigest is an AI-powered research paper analyzer that automatically genera
 ## Features
 
 - **📄 AI-Powered Analysis**: Instantly extracts insights, methods, and results from PDF research papers using the `gemini-3-pro-preview` model.
+- **🌐 Multi-language Support**: Generate digests in **English** or **Chinese**. Perfect for bilingual researchers and cross-language knowledge management.
 - **📝 Customizable Templates**: flexible Markdown template system. Create, save, and manage custom templates to match your Obsidian vault or personal note-taking style.
 - **🎨 Modern & Responsive**: A clean interface built with React and Tailwind CSS.
 - **🔗 Obsidian Ready**: Designed to produce output that pastes perfectly into Obsidian, including WikiLink support (e.g., `[[MethodName]]`).
@@ -76,11 +77,11 @@ You can batch analyze multiple papers at once using the command line.
     npm run batch
     ```
     
-    **To specify a template:**
-    Use the `--template` flag with the name of your template file (without `.md`).
+    **To specify a template or language:**
+    Use the `--template` flag with the name of your template file (without `.md`), and the `--lang` flag for language selection (`en` or `cn`).
     ```bash
-    npm run batch -- --template=brief
-    npm run batch -- --template=methods
+    npm run batch -- --template=brief --lang=cn
+    npm run batch -- --template=methods --lang=en
     ```
 
 ### Proxy Support
@@ -99,6 +100,7 @@ HTTPS_PROXY=http://127.0.0.1:7890
 ## Updates
 
 ### 2026-01-18
+- **Language Selection**: Implemented dual-language support (English and Chinese) for both the web UI and batch processing script.
 - **Core Improvements**: Extracted default templates to external Markdown files in `templates/` and implemented file system sync for new web UI templates.
 - **CLI Enhancements**: Added Batch Processing CLI tool (`npm run batch`) with template selection, proxy support, and `gemini-3-flash-preview` stability.
 - **UI & UX**: Added loading progress bars (Web & CLI), improved template visibility, and implemented a robust fallback for the "Copy Markdown" feature.

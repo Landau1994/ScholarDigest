@@ -22,3 +22,5 @@ export interface Template {
   content: string;
   isDefault?: boolean;
 }
+
+export type Language = 'en' | 'cn';

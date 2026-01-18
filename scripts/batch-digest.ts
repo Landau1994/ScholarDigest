@@ -37,7 +37,7 @@ const getGeminiClient = () => {
   return new GoogleGenAI({ apiKey: API_KEY });
 };
 
-async function processFile(filename: string, templateContent: string, bar: cliProgress.SingleBar) {
+async function processFile(filename: string, templateContent: string, language: string, bar: cliProgress.SingleBar) {
   const filePath = path.join(INPUT_DIR, filename);
   
   // Update bar payload to show current file
@@ -59,7 +59,9 @@ async function processFile(filename: string, templateContent: string, bar: cliPr
 
     const prompt = `
       You are an expert academic researcher. 
-      Analyze the provided research paper and generate a digest using this Markdown template:
+      Analyze the provided research paper and generate a digest using this Markdown template.
+      
+      Output Language: ${language === 'cn' ? 'Chinese (Simplified)' : 'English'}
       
       \`\`\`markdown
       ${templateContent}
@@ -69,6 +71,7 @@ async function processFile(filename: string, templateContent: string, bar: cliPr
       1. Replace "<% tp.file.title %>" with the paper's title.
       2. Follow the template structure strictly.
       3. Return ONLY raw Markdown.
+      4. Ensure the content is written in ${language === 'cn' ? 'Chinese (Simplified)' : 'English'}, except for technical terms that are commonly used in English.
     `;
 
     const response = await client.models.generateContent({
@@ -94,7 +97,7 @@ async function processFile(filename: string, templateContent: string, bar: cliPr
     } else {
       bar.stop(); // Stop bar to print error clearly
       console.error(`❌ No response text for ${filename}`);
-      bar.start(bar.getTotal(), bar.value, { filename: 'Retrying...' }); // Restart/Resume logic roughly
+      bar.start(bar.getTotal(), (bar as any).value, { filename: 'Retrying...' }); // Restart/Resume logic roughly
     }
 
   } catch (error: any) {
@@ -109,10 +112,19 @@ async function main() {
 
   // Parse arguments
   let templateName = 'standard';
+  let language = 'en';
   const args = process.argv.slice(2);
   const templateArg = args.find(arg => arg.startsWith('--template='));
   if (templateArg) {
     templateName = templateArg.split('=')[1];
+  }
+  const langArg = args.find(arg => arg.startsWith('--lang='));
+  if (langArg) {
+     language = langArg.split('=')[1];
+     if (language !== 'en' && language !== 'cn') {
+        console.warn(`⚠️ Warning: Unknown language '${language}', defaulting to English (en).`);
+        language = 'en';
+     }
   }
 
   const templateFile = `${templateName}.md`;
@@ -124,6 +136,7 @@ async function main() {
      if (fs.existsSync(templatePath)) {
         templateContent = fs.readFileSync(templatePath, 'utf-8');
         console.log(`📝 Using template: ${templateName} (${templateFile})`);
+        console.log(`🌐 Target Language: ${language === 'cn' ? 'Chinese' : 'English'}`);
      } else {
         console.error(`❌ Template '${templateName}' not found.`);
         console.log("👉 Available templates:");
@@ -164,7 +177,7 @@ async function main() {
   // Process sequentially to avoid rate limits
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-    await processFile(file, templateContent, bar);
+    await processFile(file, templateContent, language, bar);
     bar.increment();
     
     // Rate limit pause (skip after last file)

@@ -20,17 +20,37 @@ const App: React.FC = () => {
   const [newTemplateName, setNewTemplateName] = useState('');
   const [isNamingTemplate, setIsNamingTemplate] = useState(false);
 
-  // Load saved templates on mount
+  // Load templates from server on mount
   useEffect(() => {
-    const saved = localStorage.getItem('custom_templates');
-    if (saved) {
+    const fetchTemplates = async () => {
       try {
-        const parsed = JSON.parse(saved);
-        setTemplates([...DEFAULT_TEMPLATES, ...parsed]);
+        const res = await fetch('/api/templates');
+        if (!res.ok) throw new Error('Failed to load templates');
+        const serverTemplates: Template[] = await res.json();
+        
+        if (serverTemplates.length > 0) {
+           setTemplates(serverTemplates);
+           // If current selection is not in the new list, reset to first available
+           const currentExists = serverTemplates.find(t => t.id === selectedTemplateId);
+           if (!currentExists) {
+              setSelectedTemplateId(serverTemplates[0].id);
+              setTemplateContent(serverTemplates[0].content);
+           }
+        }
       } catch (e) {
-        console.error("Failed to load custom templates", e);
+        console.error("Failed to load templates from server, falling back to defaults", e);
+        // Fallback: Try local storage + defaults if server fails
+        const saved = localStorage.getItem('custom_templates');
+        if (saved) {
+           try {
+              const parsed = JSON.parse(saved);
+              setTemplates([...DEFAULT_TEMPLATES, ...parsed]);
+           } catch (err) { /* ignore */ }
+        }
       }
-    }
+    };
+    
+    fetchTemplates();
   }, []);
 
   const handleFileSelect = async (file: File) => {
@@ -64,23 +84,65 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSaveAsNew = () => {
+  const handleSaveChanges = async () => {
+     const currentTemplate = templates.find(t => t.id === selectedTemplateId);
+     if (!currentTemplate || currentTemplate.isDefault) return;
+
+     // Update local state
+     const updatedTemplates = templates.map(t => 
+        t.id === selectedTemplateId ? { ...t, content: templateContent } : t
+     );
+     setTemplates(updatedTemplates);
+
+     // Persist to server
+     try {
+       await fetch('/api/save-template', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           name: currentTemplate.name, // Use existing name to overwrite
+           content: templateContent
+         })
+       });
+       alert('Template saved successfully!');
+     } catch (error) {
+       console.error("Failed to save template changes:", error);
+       alert('Failed to save changes.');
+     }
+  };
+
+  const handleSaveAsNew = async () => {
     if (!newTemplateName.trim()) return;
 
+    // Sanitize ID generation to match server logic roughly (for optimistic UI)
+    const safeName = newTemplateName.trim().replace(/[^a-z0-9_\- ]/gi, '').trim().replace(/\s+/g, '-').toLowerCase();
+    const newId = safeName; 
+    
     const newTemplate: Template = {
-      id: `custom-${Date.now()}`,
+      id: newId,
       name: newTemplateName.trim(),
       content: templateContent,
       isDefault: false
     };
 
+    // Optimistic update: Update UI immediately
     const updatedTemplates = [...templates, newTemplate];
     setTemplates(updatedTemplates);
     setSelectedTemplateId(newTemplate.id);
     
-    // Persist custom templates
-    const customTemplates = updatedTemplates.filter(t => !t.isDefault);
-    localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+    // Persist to server
+    try {
+      await fetch('/api/save-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newTemplate.name,
+          content: newTemplate.content
+        })
+      });
+    } catch (error) {
+      console.error("Failed to save template to disk:", error);
+    }
     
     setIsNamingTemplate(false);
     setNewTemplateName('');
@@ -172,7 +234,7 @@ const App: React.FC = () => {
                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${isTemplateExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                      </svg>
-                     {isTemplateExpanded ? 'Hide Template' : 'Customize Output Template'}
+                     {isTemplateExpanded ? 'Hide Template' : `Using: ${templates.find(t => t.id === selectedTemplateId)?.name || 'Default'}`}
                   </button>
                </div>
                
@@ -230,6 +292,18 @@ const App: React.FC = () => {
                               </div>
                            ) : (
                               <>
+                                 {!templates.find(t => t.id === selectedTemplateId)?.isDefault && (
+                                    <button 
+                                       onClick={handleSaveChanges}
+                                       className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors mr-2"
+                                    >
+                                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                       </svg>
+                                       Save Changes
+                                    </button>
+                                 )}
+
                                  <button 
                                     onClick={() => setIsNamingTemplate(true)}
                                     className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"

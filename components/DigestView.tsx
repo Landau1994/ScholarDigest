@@ -11,17 +11,79 @@ interface DigestViewProps {
 const DigestView: React.FC<DigestViewProps> = ({ markdown, isLoading = false, onReset }) => {
   const [copied, setCopied] = useState(false);
   const [viewMode, setViewMode] = useState<'preview' | 'raw'>('preview');
+  const [progress, setProgress] = useState(0);
+
+  // Simulated progress bar logic
+  React.useEffect(() => {
+    if (isLoading) {
+      setProgress(0);
+      const interval = setInterval(() => {
+        setProgress(old => {
+          if (old >= 90) return old; // Stall at 90%
+          // Logarithmic-ish slowdown: faster at start, slower at end
+          const remaining = 90 - old;
+          const step = Math.max(0.5, remaining / 10); 
+          return old + step;
+        });
+      }, 500); // Update every 500ms
+      return () => clearInterval(interval);
+    } else {
+      setProgress(100);
+    }
+  }, [isLoading]);
 
   const handleCopy = async () => {
     if (isLoading) return;
+    
     try {
-      await navigator.clipboard.writeText(markdown);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Primary method: Clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+         await navigator.clipboard.writeText(markdown);
+         setCopied(true);
+      } else {
+         throw new Error('Clipboard API unavailable');
+      }
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      // Fallback method: textarea hack
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = markdown;
+        
+        // Ensure it's not visible but part of the DOM
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+           setCopied(true);
+        } else {
+           throw new Error('Fallback copy failed');
+        }
+      } catch (fallbackErr) {
+        console.error('Failed to copy text: ', fallbackErr);
+        alert("Failed to copy to clipboard. Please select the text and copy manually.");
+      }
+    }
+    
+    if (copied) {
+       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  // Effect to reset 'copied' state after delay (moved out of function for cleaner state logic)
+  React.useEffect(() => {
+     if (copied) {
+        const timer = setTimeout(() => setCopied(false), 2000);
+        return () => clearTimeout(timer);
+     }
+  }, [copied]);
 
   return (
     <div className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden flex flex-col h-full max-h-[85vh]">
@@ -126,10 +188,19 @@ const DigestView: React.FC<DigestViewProps> = ({ markdown, isLoading = false, on
             </div>
             
             <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[1px]">
-               <div className="flex flex-col items-center p-6 bg-white rounded-xl shadow-lg border border-slate-100">
+               <div className="flex flex-col items-center p-6 bg-white rounded-xl shadow-lg border border-slate-100 w-64">
                   <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-3"></div>
                   <p className="text-slate-800 font-medium">Analyzing Research Paper...</p>
-                  <p className="text-slate-500 text-sm mt-1">Extracting methods and results</p>
+                  <p className="text-slate-500 text-sm mt-1 mb-3">Extracting methods and results</p>
+                  
+                  {/* Progress Bar */}
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                    <div 
+                      className="bg-primary-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">{Math.round(progress)}%</p>
                </div>
             </div>
           </div>

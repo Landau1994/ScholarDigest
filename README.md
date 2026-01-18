@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" alt="ScholarDigest Banner" src="./cover.jpeg" />
 </div>
 
 # ScholarDigest
@@ -104,6 +104,7 @@ HTTPS_PROXY=http://127.0.0.1:7890
 - **UI & UX**: Added loading progress bars (Web & CLI), improved template visibility, and implemented a robust fallback for the "Copy Markdown" feature.
 - **Security & Ops**: Implemented secure secret management (`.env.example`), moved agent rules to `.gemini/`, and documented `pm2` deployment.
 - **Agent Config**: Added `GEMINI.md` for interaction customization.
+- **Visuals**: Designed and implemented a new "Nature-level" scientific infographic banner (`cover.jpeg`).
 
 
 

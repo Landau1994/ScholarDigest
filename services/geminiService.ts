@@ -41,14 +41,16 @@ export const generateDigest = async (file: File, template: string, language: Lan
 
     const filePart = await fileToGenerativePart(file);
 
+    const languageInstruction = language === 'cn' ? 'Simplified Chinese' : 'English';
+
     const prompt = `
-      You are an expert academic researcher and data scientist. 
+      You are an expert academic researcher and data scientist.
       Your task is to analyze the provided research paper and generate a comprehensive digest based strictly on the following Markdown template.
-      
-      Output Language: ${language === 'cn' ? 'Chinese (Simplified)' : 'English'}
-      
+
+      Output Language: ${languageInstruction}
+
       Here is the template you must fill out:
-      
+
       \`\`\`markdown
       ${template}
       \`\`\`
@@ -62,23 +64,26 @@ export const generateDigest = async (file: File, template: string, language: Lan
       6. **Figures**: Summarize the key figures in the table provided.
       7. **Personal Notes**: Leave this section blank for the user.
       8. **Formatting**: Return ONLY the raw Markdown text. Do not wrap it in \`\`\`markdown code blocks.
-      9. **Language**: Ensure all generated content is in ${language === 'cn' ? 'Chinese (Simplified)' : 'English'}, except for technical terms that are commonly used in English or the paper title if appropriate.
+      9. **Language**: Output all content in ${languageInstruction}, except for technical terms commonly used in English or the paper title.
     `;
 
-    const response = await client.models.generateContent({
+    // Build request options - use same config for all languages
+    const requestOptions: any = {
       model: modelId,
-      contents: {
+      contents: [{
         parts: [
           filePart,
           { text: prompt }
         ]
-      },
+      }],
       config: {
         thinkingConfig: {
-          thinkingBudget: 2048, 
+          thinkingBudget: 2048,
         }
       }
-    });
+    };
+
+    const response = await client.models.generateContent(requestOptions);
 
     if (!response.text) {
       throw new Error("The model returned an empty response.");

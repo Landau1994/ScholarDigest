@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import UploadArea from './components/UploadArea';
 import DigestView from './components/DigestView';
 import { generateDigest } from './services/geminiService';
-import { LoadingState, Template, Language } from './types';
+import { LoadingState, Template, Language, TaskHistoryItem } from './types';
 import { DEFAULT_TEMPLATES } from './constants';
 
 const App: React.FC = () => {
@@ -10,6 +10,7 @@ const App: React.FC = () => {
   const [digest, setDigest] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('en');
+  const [history, setHistory] = useState<TaskHistoryItem[]>([]);
   
   // Template Management State
   const [templates, setTemplates] = useState<Template[]>(DEFAULT_TEMPLATES);
@@ -20,6 +21,22 @@ const App: React.FC = () => {
   // New template creation state
   const [newTemplateName, setNewTemplateName] = useState('');
   const [isNamingTemplate, setIsNamingTemplate] = useState(false);
+
+  // Load history from local storage
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch('/api/history');
+        if (res.ok) {
+          const data = await res.json();
+          setHistory(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch history", e);
+      }
+    };
+    fetchHistory();
+  }, []);
 
   // Load templates from server on mount
   useEffect(() => {
@@ -63,6 +80,30 @@ const App: React.FC = () => {
       const result = await generateDigest(file, templateContent, selectedLanguage);
       setDigest(result);
       setLoadingState(LoadingState.SUCCESS);
+
+      // Save to history
+      const newItem: TaskHistoryItem = {
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        filename: file.name,
+        markdown: result
+      };
+      
+      try {
+        const res = await fetch('/api/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newItem)
+        });
+        if (res.ok) {
+          const updatedHistory = await res.json();
+          setHistory(updatedHistory);
+        }
+      } catch (e) {
+        console.error("Failed to save history", e);
+        // Fallback to local state update if API fails
+        setHistory(prevHistory => [newItem, ...prevHistory].slice(0, 3));
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An unexpected error occurred while analyzing the paper.");
@@ -369,6 +410,31 @@ const App: React.FC = () => {
                 onFileSelect={handleFileSelect} 
                 loadingState={loadingState} 
              />
+          )}
+
+          {!digest && loadingState !== LoadingState.ANALYZING && history.length > 0 && (
+            <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Recent Digests</h3>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {history.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                       setDigest(item.markdown);
+                       setLoadingState(LoadingState.SUCCESS);
+                    }}
+                    className="flex flex-col items-start p-4 bg-white border border-slate-200 rounded-xl hover:border-primary-300 hover:shadow-md transition-all text-left group"
+                  >
+                    <div className="font-medium text-slate-800 group-hover:text-primary-700 line-clamp-1 w-full" title={item.filename}>
+                      {item.filename}
+                    </div>
+                    <div className="text-xs text-slate-400 mt-1">
+                      {new Date(item.timestamp).toLocaleDateString()} {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           {(digest || loadingState === LoadingState.ANALYZING) && (

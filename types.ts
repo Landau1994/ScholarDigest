@@ -23,4 +23,11 @@ export interface Template {
   isDefault?: boolean;
 }
 
+export interface TaskHistoryItem {
+  id: string;
+  timestamp: number;
+  filename: string;
+  markdown: string;
+}
+
 export type Language = 'en' | 'cn';

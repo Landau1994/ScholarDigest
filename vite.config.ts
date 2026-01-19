@@ -91,6 +91,63 @@ export default defineConfig(({ mode }) => {
                   next();
                }
             });
+
+            // History API
+            server.middlewares.use('/api/history', (req, res, next) => {
+              const tempDir = path.join(__dirname, 'temp');
+              const historyFile = path.join(tempDir, 'history.json');
+              
+              if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir);
+              }
+
+              if (req.method === 'GET') {
+                try {
+                  if (fs.existsSync(historyFile)) {
+                    const history = fs.readFileSync(historyFile, 'utf-8');
+                    res.setHeader('Content-Type', 'application/json');
+                    res.statusCode = 200;
+                    res.end(history);
+                  } else {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.statusCode = 200;
+                    res.end(JSON.stringify([])); // Return empty array if no history
+                  }
+                } catch (e: any) {
+                  console.error('Error reading history:', e);
+                  res.statusCode = 500;
+                  res.end(JSON.stringify({ error: e.message }));
+                }
+              } else if (req.method === 'POST') {
+                  let body = '';
+                  req.on('data', (chunk) => {
+                    body += chunk.toString();
+                  });
+                  req.on('end', () => {
+                    try {
+                      const newHistoryItem = JSON.parse(body);
+                      let history = [];
+                      if (fs.existsSync(historyFile)) {
+                          history = JSON.parse(fs.readFileSync(historyFile, 'utf-8'));
+                      }
+                      
+                      const updatedHistory = [newHistoryItem, ...history].slice(0, 3);
+                      
+                      fs.writeFileSync(historyFile, JSON.stringify(updatedHistory, null, 2));
+                      
+                      res.setHeader('Content-Type', 'application/json');
+                      res.statusCode = 200;
+                      res.end(JSON.stringify(updatedHistory));
+                    } catch (e: any) {
+                      console.error('Error saving history:', e);
+                      res.statusCode = 500;
+                      res.end(JSON.stringify({ error: e.message }));
+                    }
+                });
+              } else {
+                next();
+              }
+            });
           },
         }
       ],

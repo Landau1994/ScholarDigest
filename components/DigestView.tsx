@@ -85,6 +85,19 @@ const DigestView: React.FC<DigestViewProps> = ({ markdown, isLoading = false, on
      }
   }, [copied]);
 
+  const handleDownload = () => {
+    if (isLoading) return;
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'digest.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden flex flex-col h-full max-h-[85vh]">
       {/* Toolbar */}
@@ -120,6 +133,18 @@ const DigestView: React.FC<DigestViewProps> = ({ markdown, isLoading = false, on
         </div>
 
         <div className="flex items-center space-x-3">
+          <button
+            onClick={handleDownload}
+            disabled={isLoading}
+            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title="Download as Markdown"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download
+          </button>
+
           <button
             onClick={handleCopy}
             disabled={isLoading}

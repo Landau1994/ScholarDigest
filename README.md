@@ -99,6 +99,12 @@ HTTPS_PROXY=http://127.0.0.1:7890
 
 ## Updates
 
+### 2026-01-20
+- **Task History**: Added persistent history feature. Recent digests are now automatically saved to `temp/history.json` and accessible from the UI, even after a restart.
+- **Template System**: Enhanced template management. Custom templates created in the UI are now saved directly to the `templates/` directory as Markdown files.
+- **Model Upgrade**: Updated the web app to use `gemini-3-pro-preview` with `thinkingConfig` enabled for deeper reasoning and more accurate extraction.
+- **Server Middleware**: Implemented custom Vite middleware to handle local file system operations (history and templates) directly from the frontend dev server.
+
 ### 2026-01-18
 - **Language Selection**: Implemented dual-language support (English and Chinese) for both the web UI and batch processing script.
 - **Core Improvements**: Extracted default templates to external Markdown files in `templates/` and implemented file system sync for new web UI templates.

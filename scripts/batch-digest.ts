@@ -55,7 +55,7 @@ async function processFile(filename: string, templateContent: string, language: 
     if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
 
     const client = getGeminiClient();
-    const modelId = "gemini-3-flash-preview"; 
+    const modelId = "gemini-3.1-flash-lite"; 
 
     const prompt = `
       You are an expert academic researcher. 

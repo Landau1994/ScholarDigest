@@ -36,8 +36,8 @@ export const generateDigest = async (file: File, template: string, language: Lan
   try {
     const client = getGeminiClient();
     
-    // Using gemini-3-pro-preview for complex reasoning and document analysis
-    const modelId = "gemini-3-pro-preview";
+    // Using gemini-3.1-flash-lite for fast and efficient document analysis
+    const modelId = "gemini-3.1-flash-lite";
 
     const filePart = await fileToGenerativePart(file);
 

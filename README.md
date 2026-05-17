@@ -10,7 +10,7 @@ ScholarDigest is an AI-powered research paper analyzer that automatically genera
 
 ## Features
 
-- **📄 AI-Powered Analysis**: Instantly extracts insights, methods, and results from PDF research papers using the `gemini-3-pro-preview` model.
+- **📄 AI-Powered Analysis**: Instantly extracts insights, methods, and results from PDF research papers using the `gemini-3.1-flash-lite` model.
 - **🌐 Multi-language Support**: Generate digests in **English** or **Chinese**. Perfect for bilingual researchers and cross-language knowledge management.
 - **📝 Customizable Templates**: flexible Markdown template system. Create, save, and manage custom templates to match your Obsidian vault or personal note-taking style.
 - **🎨 Modern & Responsive**: A clean interface built with React and Tailwind CSS.
@@ -21,8 +21,8 @@ ScholarDigest is an AI-powered research paper analyzer that automatically genera
 
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS (via CDN)
-- **AI Model (Web App)**: Google Gemini API (`gemini-3-pro-preview` for high-quality single-file analysis)
-- **AI Model (CLI)**: Google Gemini API (`gemini-3-flash-preview` for stable batch processing)
+- **AI Model (Web App)**: Google Gemini API (`gemini-3.1-flash-lite` for high-quality single-file analysis)
+- **AI Model (CLI)**: Google Gemini API (`gemini-3.1-flash-lite` for stable batch processing)
 
 
 ## Security & Secrets
@@ -102,13 +102,13 @@ HTTPS_PROXY=http://127.0.0.1:7890
 ### 2026-01-20
 - **Task History**: Added persistent history feature. Recent digests are now automatically saved to `temp/history.json` and accessible from the UI, even after a restart.
 - **Template System**: Enhanced template management. Custom templates created in the UI are now saved directly to the `templates/` directory as Markdown files.
-- **Model Upgrade**: Updated the web app to use `gemini-3-pro-preview` with `thinkingConfig` enabled for deeper reasoning and more accurate extraction.
+- **Model Upgrade**: Updated the web app to use `gemini-3.1-flash-lite` with `thinkingConfig` enabled for deeper reasoning and more accurate extraction.
 - **Server Middleware**: Implemented custom Vite middleware to handle local file system operations (history and templates) directly from the frontend dev server.
 
 ### 2026-01-18
 - **Language Selection**: Implemented dual-language support (English and Chinese) for both the web UI and batch processing script.
 - **Core Improvements**: Extracted default templates to external Markdown files in `templates/` and implemented file system sync for new web UI templates.
-- **CLI Enhancements**: Added Batch Processing CLI tool (`npm run batch`) with template selection, proxy support, and `gemini-3-flash-preview` stability.
+- **CLI Enhancements**: Added Batch Processing CLI tool (`npm run batch`) with template selection, proxy support, and `gemini-3.1-flash-lite` stability.
 - **UI & UX**: Added loading progress bars (Web & CLI), improved template visibility, and implemented a robust fallback for the "Copy Markdown" feature.
 - **Security & Ops**: Implemented secure secret management (`.env.example`), moved agent rules to `.gemini/`, and documented `pm2` deployment.
 - **Agent Config**: Added `GEMINI.md` for interaction customization.

@@ -111,7 +111,7 @@ async function main() {
   console.log("🚀 Starting Batch Analysis...");
 
   // Parse arguments
-  let templateName = 'standard';
+  let templateName = 'general_article';
   let language = 'en';
   const args = process.argv.slice(2);
   const templateArg = args.find(arg => arg.startsWith('--template='));

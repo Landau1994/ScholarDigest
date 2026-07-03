@@ -3,9 +3,7 @@ title: <% tp.file.title %>
 authors:
   -
 aliases:
-   - <article>
-   - <paper>
-   - <literature>
+  - 
 tags:
   - literature
   - paper

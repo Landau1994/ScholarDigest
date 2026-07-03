@@ -1,4 +1,5 @@
 ---
+title: <%tp.file.title %>
 aliases:
 authors:
 tags:
@@ -73,7 +74,7 @@ created: <% tp.date.now("YYYY-MM-DD HH:mm") %>
 > - Lack of in vivo validation?
 
 > [!tip] Relevance to My Research
-> **Connection to [[FBN1]] or [[SPP1]]**:
+> **Connection to AIVC, MFS? Single Cell Proteomics?**:
 > - *Method to adapt*: 
 > - *Idea to steal*: 
 

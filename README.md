@@ -99,6 +99,11 @@ HTTPS_PROXY=http://127.0.0.1:7890
 
 ## Updates
 
+### 2026-07-03
+- **External Summary Templates**: Fully externalized built-in summary templates (`standard`, `brief`, `methods`). The web app now dynamically loads all templates from the server via `/api/templates`, leaving no hardcoded template contents in the client-side bundle.
+- **Default Template**: Designated `general_article` (General_article) as the default summary template across the entire system—both in the web client and the batch processing CLI script.
+- **Template Protection**: Updated Vite server middleware to mark all pre-shipped templates (`general_article`, `review`, `aivc_paper`, `scp_paper`, `standard`, `brief`, `methods`) as default system templates, protecting them from accidental edit or deletion in the UI.
+
 ### 2026-01-20
 - **Task History**: Added persistent history feature. Recent digests are now automatically saved to `temp/history.json` and accessible from the UI, even after a restart.
 - **Template System**: Enhanced template management. Custom templates created in the UI are now saved directly to the `templates/` directory as Markdown files.

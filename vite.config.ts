@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 3000,
+        port: 3001,
         host: '0.0.0.0',
       },
       plugins: [
@@ -63,6 +63,7 @@ export default defineConfig(({ mode }) => {
 
                      const files = fs.readdirSync(templatesDir).filter(file => file.endsWith('.md'));
                      
+                     const SYSTEM_TEMPLATES = ['general_article', 'standard', 'brief', 'methods', 'review', 'aivc_paper', 'scp_paper'];
                      const templates = files.map(file => {
                         const content = fs.readFileSync(path.join(templatesDir, file), 'utf-8');
                         // Convert filename to readable name (e.g., "my-template.md" -> "My Template")
@@ -75,7 +76,7 @@ export default defineConfig(({ mode }) => {
                            id: file.replace('.md', ''),
                            name: name,
                            content: content,
-                           isDefault: ['standard', 'brief', 'methods'].includes(file.replace('.md', '')) // optional flag
+                           isDefault: SYSTEM_TEMPLATES.includes(file.replace('.md', '')) // optional flag
                         };
                      });
 

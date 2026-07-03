@@ -3,7 +3,6 @@ import UploadArea from './components/UploadArea';
 import DigestView from './components/DigestView';
 import { generateDigest } from './services/geminiService';
 import { LoadingState, Template, Language, TaskHistoryItem } from './types';
-import { DEFAULT_TEMPLATES } from './constants';
 
 const App: React.FC = () => {
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
@@ -13,9 +12,9 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<TaskHistoryItem[]>([]);
   
   // Template Management State
-  const [templates, setTemplates] = useState<Template[]>(DEFAULT_TEMPLATES);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(DEFAULT_TEMPLATES[0].id);
-  const [templateContent, setTemplateContent] = useState<string>(DEFAULT_TEMPLATES[0].content);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('general_article');
+  const [templateContent, setTemplateContent] = useState<string>('');
   const [isTemplateExpanded, setIsTemplateExpanded] = useState(false);
   
   // New template creation state
@@ -48,21 +47,29 @@ const App: React.FC = () => {
         
         if (serverTemplates.length > 0) {
            setTemplates(serverTemplates);
-           // If current selection is not in the new list, reset to first available
-           const currentExists = serverTemplates.find(t => t.id === selectedTemplateId);
-           if (!currentExists) {
+           // Find the template matching selectedTemplateId (which defaults to 'general_article')
+           // If not found, try to fallback to 'general_article', or the first template in the list
+           const currentExists = serverTemplates.find(t => t.id === selectedTemplateId) || serverTemplates.find(t => t.id === 'general_article');
+           if (currentExists) {
+              setSelectedTemplateId(currentExists.id);
+              setTemplateContent(currentExists.content);
+           } else {
               setSelectedTemplateId(serverTemplates[0].id);
               setTemplateContent(serverTemplates[0].content);
            }
         }
       } catch (e) {
-        console.error("Failed to load templates from server, falling back to defaults", e);
-        // Fallback: Try local storage + defaults if server fails
+        console.error("Failed to load templates from server", e);
+        // Fallback: Try local storage if server fails
         const saved = localStorage.getItem('custom_templates');
         if (saved) {
            try {
               const parsed = JSON.parse(saved);
-              setTemplates([...DEFAULT_TEMPLATES, ...parsed]);
+              setTemplates(parsed);
+              if (parsed.length > 0) {
+                 setSelectedTemplateId(parsed[0].id);
+                 setTemplateContent(parsed[0].content);
+              }
            } catch (err) { /* ignore */ }
         }
       }

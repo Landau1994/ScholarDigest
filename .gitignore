@@ -4,6 +4,7 @@ output/
 
 # Personal Agent Config & Temp Files
 .gemini
+temp/
 
 # Logs
 logs

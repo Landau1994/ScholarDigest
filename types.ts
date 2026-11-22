@@ -8,7 +8,9 @@ export enum LoadingState {
 
 export interface DigestResult {
   markdown: string;
-  filename: string;
+  filename?: string;
+  modelUsed: string;
+  fallbackFrom?: string;
 }
 
 export interface ProcessingError {
@@ -28,6 +30,8 @@ export interface TaskHistoryItem {
   timestamp: number;
   filename: string;
   markdown: string;
+  modelUsed?: string;
+  templateId?: string;
 }
 
 export type Language = 'en' | 'cn';
